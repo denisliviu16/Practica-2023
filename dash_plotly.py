@@ -37,6 +37,21 @@ fig2.update_layout(
 fig3 = px.pie (df3,names='Member state',values='Contribution')
 
 
+df4['Pct'] = df4['Pct'].str.rstrip('%').astype(float)
+
+fig4 = px.choropleth(
+    data_frame=df4,
+    locations='Country',
+    locationmode='country names',
+    color='Pct',
+    hover_data=["Region","Subregion", "Internet users", "Population(2021)"],
+    projection='natural earth',
+)
+fig4.update_layout(
+    width=800,
+    height=500
+)
+
 app = dash.Dash(__name__)
 
 app.layout = html.Div([
@@ -54,10 +69,9 @@ app.layout = html.Div([
               style={'width':'1200px','height':'550px'}),
     
     html.Div([
-        html.Title('Financing of the general EU budget by member state (2023)', style={'text-align': 'left'}),
+        html.H2('Financing of the general EU budget by member state (2023)', style={'text-align': 'left'}),
         dcc.Graph(id='graph', figure=fig3, style={'float': 'left', 'margin': 'auto', 'width': '800px', 'height': '600px'})
     ]),
-    
     html.Div([
         dcc.Graph(id='choropleth-map1',
                   figure=fig3,
@@ -72,26 +86,29 @@ app.layout = html.Div([
         )
     ]),
     
-    html.Div([
-        html.Label("Select the region:", style={'display': 'inline-block'}),
-        dcc.Dropdown(
-            id='dropdown-region',
-            options=[{'label': region, 'value': region} for region in df4['Region'].unique()],
-            style={'width': '150px', 'height': '40px'},
-            value=df4['Region'].unique()[0],
-        )
-    ]),
+    #html.Div([
+        #html.Label("Select the region:", style={'display': 'inline-block'}),
+        #dcc.Dropdown(
+            #id='dropdown-region',
+            #options=[{'label': region, 'value': region} for region in df4['Region'].unique()],
+            #style={'width': '150px', 'height': '40px'},
+            #value=df4['Region'].unique()[0],
+        #)
+    #]),
     
+    #html.Div([
+    #dcc.Graph(
+        #id='line-chart',
+        #style={'width': '1200px', 'height': '800px'}
+        #)
+    #]),
     html.Div([
-    dcc.Graph(
-        id='line-chart',
-        style={'width': '1200px', 'height': '800px'}
+        dcc.Graph(
+            figure=fig4,
+            style={'width': '800px', 'height': '600px'}
         )
-    ],
-    style={'margin-bottom': '50px'})
+    ])
 ])
-
-
 
 
 @app.callback(
@@ -107,29 +124,29 @@ def update_graph(selected_year):
     )
     return fig
 
-@app.callback(
-    Output('line-chart', 'figure'),
-    [Input('dropdown-region', 'value')]
-)
-def update_line_chart(selected_region):
-    filtered_data = df4[df4['Region'] == selected_region]
+#@app.callback(
+    #Output('line-chart', 'figure'),
+    #[Input('dropdown-region', 'value')]
+#)
+#def update_line_chart(selected_region):
+    #filtered_data = df4[df4['Region'] == selected_region]
     
-    sorted_data = filtered_data.sort_values(by='Country', ascending=True)
-    sorted_data.loc[:, 'Pct'] = sorted_data['Pct'].str.rstrip('%').astype(float)
-    sorted_data = sorted_data.sort_values(by='Pct', ascending=True)
-    sorted_data.loc[:, 'Pct'] = sorted_data['Pct'].astype(str) + '%'
+    #sorted_data = filtered_data.sort_values(by='Country', ascending=True)
+    #sorted_data.loc[:, 'Pct'] = sorted_data['Pct'].str.rstrip('%').astype(float)
+    #sorted_data = sorted_data.sort_values(by='Pct', ascending=True)
+    #sorted_data.loc[:, 'Pct'] = sorted_data['Pct'].astype(str) + '%'
     
-    fig = px.line(sorted_data, x='Country', y='Pct',hover_data=["Subregion", "Internet users", "Population(2021)"])
+    #fig = px.line(sorted_data, x='Country', y='Pct',hover_data=["Subregion", "Internet users", "Population(2021)"])
     
-    fig.update_layout(
-        title='Line graph of countries by number of Internet users',
-        xaxis_title='Country',
-        yaxis_title='Percentage of Internet users',
-        width=1200,
-        plot_bgcolor='#f2f2f2',
-        height=600
-    )
-    return fig
+    #fig.update_layout(
+        #title='Line graph of countries by number of Internet users',
+        #xaxis_title='Country',
+        #yaxis_title='Percentage of Internet users',
+        #width=1200,
+        #plot_bgcolor='#f2f2f2',
+        #height=600
+    #)
+    #return fig
 
 if __name__ == '__main__':
     app.run_server(debug=True)
